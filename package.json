@@ -1,0 +1,15 @@
+{
+	"name": "davefilesystem",
+	"description": "Some extra routines for managing files beyond what's in fs.",
+	"author": "Dave Winer <dave@smallpicture.com>",
+	"license": "MIT",
+	"version": "0.4.0",
+	"main": "filesystem.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/scripting/filesystem.git"
+		},
+	"files": [
+		"filesystem.js"
+		]
+	}

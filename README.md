@@ -1,2 +1,6 @@
-# filesystem
-Nice-to-have file system routines for JavaScript/Node.
+### Just some filesystem routines
+
+Nice to have in a package.
+
+Dave Winer
+
