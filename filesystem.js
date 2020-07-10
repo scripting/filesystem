@@ -1,10 +1,11 @@
-var myProductName = "daveFilesystem", myVersion = "0.4.0";   
+var myProductName = "daveFilesystem", myVersion = "0.4.4";   
 
 exports.deleteDirectory = fsDeleteDirectory;
 exports.sureFilePath = fsSureFilePath;
 exports.newObject = fsNewObject;
 exports.getObject = fsGetObject;
 exports.recursivelyVisitFiles = fsRecursivelyVisitFiles;
+exports.getFolderInfo = fsGetFolderInfo; //3/2/20 by DW
 
 var fs = require ("fs");
 
@@ -16,8 +17,6 @@ var fsStats = {
 	ctBytesRead: 0,
 	ctReadErrors: 0
 	};
-
-
 
 function fsSureFilePath (path, callback) { 
 	var splits = path.split ("/");
@@ -119,41 +118,49 @@ function fsRecursivelyVisitFiles (folderpath, fileCallback, completionCallback) 
 		folderpath += "/";
 		}
 	fs.readdir (folderpath, function (err, list) {
-		function doListItem (ix) {
-			if (ix < list.length) {
-				var f = folderpath + list [ix];
-				fs.stat (f, function (err, stats) {
-					if (err) {
-						doListItem (ix + 1);
-						}
-					else {
-						if (stats.isDirectory ()) { //dive into the directory
-							fsRecursivelyVisitFiles (f, fileCallback, function () {
-								doListItem (ix + 1);
-								});
+		if (err) { //7/10/20 by DW
+			completionCallback ();
+			}
+		else {
+			function doListItem (ix) {
+				if (ix < list.length) {
+					var f = folderpath + list [ix];
+					fs.stat (f, function (err, stats) {
+						if (err) {
+							doListItem (ix + 1);
 							}
 						else {
-							if (fileCallback !== undefined) {
-								fileCallback (f);
-								doListItem (ix + 1);
+							if (stats.isDirectory ()) { //dive into the directory
+								fsRecursivelyVisitFiles (f, fileCallback, function () {
+									doListItem (ix + 1);
+									});
+								}
+							else {
+								if (fileCallback !== undefined) {
+									fileCallback (f);
+									doListItem (ix + 1);
+									}
 								}
 							}
-						}
-					});
-				}
-			else {
-				if (completionCallback !== undefined) {
-					completionCallback ();
+						});
 					}
 				else {
-					if (fileCallback !== undefined) {
-						fileCallback (undefined);
+					if (completionCallback !== undefined) {
+						completionCallback ();
+						}
+					else {
+						if (fileCallback !== undefined) {
+							fileCallback (undefined);
+							}
 						}
 					}
 				}
-			}
-		if (list !== undefined) { //6/4/15 by DW
-			doListItem (0);
+			if (list !== undefined) { //6/4/15 by DW
+				doListItem (0);
+				}
+			else {
+				completionCallback (); //7/10/20 by DW
+				}
 			}
 		});
 	}
@@ -198,5 +205,34 @@ function fsDeleteDirectory (folderpath, callback) { //3/25/16 by DW
 			doListItem (0);
 			}
 		});
+	}
+function fsGetFolderInfo (folderpath, folderInfoCallback) { //3/2/20 by DW
+	var theFolder = new Array ();
+	function fileCallback (f) {
+		theFolder.push ({f});
+		}
+	function completionCallback () {
+		function getstats (ix) {
+			if (ix < theFolder.length) {
+				var item = theFolder [ix];
+				fs.stat (item.f, function (err, stats) {
+					if (err) {
+						console.log ("getstats: f == " + f + ", err.message == " + err.message);
+						}
+					else {
+						item.size = stats.size; //number of bytes in file
+						item.whenModified = stats.mtime; //when one of the stats was changed
+						item.whenCreated = stats.birthtime;
+						}
+					getstats (ix + 1);
+					});
+				}
+			else {
+				folderInfoCallback (theFolder);
+				}
+			}
+		getstats (0);
+		}
+	fsRecursivelyVisitFiles (folderpath, fileCallback, completionCallback);
 	}
  
