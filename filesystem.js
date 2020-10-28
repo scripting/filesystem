@@ -1,4 +1,4 @@
-var myProductName = "daveFilesystem", myVersion = "0.4.4";   
+var myProductName = "daveFilesystem", myVersion = "0.4.5";   
 
 exports.deleteDirectory = fsDeleteDirectory;
 exports.sureFilePath = fsSureFilePath;
