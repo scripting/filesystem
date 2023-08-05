@@ -1,4 +1,4 @@
-var myProductName = "daveFilesystem", myVersion = "0.4.8";   
+var myProductName = "daveFilesystem", myVersion = "0.4.11";   
 
 exports.deleteDirectory = fsDeleteDirectory;
 exports.sureFilePath = fsSureFilePath;
@@ -8,7 +8,8 @@ exports.recursivelyVisitFiles = fsRecursivelyVisitFiles;
 exports.getFolderInfo = fsGetFolderInfo; //3/2/20 by DW
 exports.copyFolder = fsCopyFolder; //8/4/23 by DW
 
-var fs = require ("fs");
+const fs = require ("fs");
+const utils = require ("daveutils");
 
 var fsStats = {
 	ctWrites: 0,
@@ -236,27 +237,32 @@ function fsGetFolderInfo (folderpath, folderInfoCallback) { //3/2/20 by DW
 		}
 	fsRecursivelyVisitFiles (folderpath, fileCallback, completionCallback);
 	}
-function fsCopyFolder (sourcefolder, destfolder, callback) { //8/4/23 by DW
+function fsCopyFolder (sourcefolder, destfolder, callback, filecallback) { //8/5/23 by DW
 	function completionCallback () {
 		callback ();
 		}
 	fsRecursivelyVisitFiles (sourcefolder, function (fsource) {
 		var fname = utils.stringLastField (fsource, "/");
 		if (fname != ".DS_Store") {
+			var flcopy = true;
 			const relpath = utils.stringDelete (fsource, 1, sourcefolder.length);
-			const fdest = destfolder + relpath;
-			fsSureFilePath (fdest, function () {
-				try {
-					console.log (fsource);
-					fs.copyFileSync (fsource, fdest);
-					}
-				catch (err) {
-					console.log (err.message);
-					return;
-					}
-				const stats = fs.statSync (fsource);
-				fs.utimesSync (fdest, stats.birthtime, stats.mtime);
-				});
+			if (filecallback !== undefined) { //8/5/23 by DW
+				flcopy = filecallback (relpath);
+				}
+			if (flcopy) {
+				const fdest = destfolder + relpath;
+				fsSureFilePath (fdest, function () {
+					try {
+						fs.copyFileSync (fsource, fdest);
+						}
+					catch (err) {
+						console.log ("copyFolder: relpath == " + relpath + ", err.message == " + err.message);
+						return;
+						}
+					const stats = fs.statSync (fsource);
+					fs.utimesSync (fdest, stats.birthtime, stats.mtime);
+					});
+				}
 			}
 		}, completionCallback);
 	}
