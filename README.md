@@ -8,6 +8,10 @@ Dave Winer
 
 ### Updates
 
+#### 8/5/23 by DW
+
+davefilesystem.copyFolder
+
 #### 10/28/20 by DW
 
 Used this package as an <a href="http://this.how/frontier/nodeEditorExample.opml">example</a> to explain how I use the Frontier outliner to edit my JavaScript projects. 

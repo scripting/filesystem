@@ -1,4 +1,4 @@
-var myProductName = "daveFilesystem", myVersion = "0.4.5";   
+var myProductName = "daveFilesystem", myVersion = "0.4.8";   
 
 exports.deleteDirectory = fsDeleteDirectory;
 exports.sureFilePath = fsSureFilePath;
@@ -6,6 +6,7 @@ exports.newObject = fsNewObject;
 exports.getObject = fsGetObject;
 exports.recursivelyVisitFiles = fsRecursivelyVisitFiles;
 exports.getFolderInfo = fsGetFolderInfo; //3/2/20 by DW
+exports.copyFolder = fsCopyFolder; //8/4/23 by DW
 
 var fs = require ("fs");
 
@@ -234,5 +235,29 @@ function fsGetFolderInfo (folderpath, folderInfoCallback) { //3/2/20 by DW
 		getstats (0);
 		}
 	fsRecursivelyVisitFiles (folderpath, fileCallback, completionCallback);
+	}
+function fsCopyFolder (sourcefolder, destfolder, callback) { //8/4/23 by DW
+	function completionCallback () {
+		callback ();
+		}
+	fsRecursivelyVisitFiles (sourcefolder, function (fsource) {
+		var fname = utils.stringLastField (fsource, "/");
+		if (fname != ".DS_Store") {
+			const relpath = utils.stringDelete (fsource, 1, sourcefolder.length);
+			const fdest = destfolder + relpath;
+			fsSureFilePath (fdest, function () {
+				try {
+					console.log (fsource);
+					fs.copyFileSync (fsource, fdest);
+					}
+				catch (err) {
+					console.log (err.message);
+					return;
+					}
+				const stats = fs.statSync (fsource);
+				fs.utimesSync (fdest, stats.birthtime, stats.mtime);
+				});
+			}
+		}, completionCallback);
 	}
  

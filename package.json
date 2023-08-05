@@ -3,7 +3,7 @@
 	"description": "Some extra routines for managing files beyond what's in fs.",
 	"author": "Dave Winer <dave@scripting.com>",
 	"license": "MIT",
-	"version": "0.4.5",
+	"version": "0.4.8",
 	"main": "filesystem.js",
 	"repository": {
 		"type": "git",
